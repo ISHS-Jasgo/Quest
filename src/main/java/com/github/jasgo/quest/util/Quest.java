@@ -13,21 +13,15 @@ public class Quest {
     private final List<ItemStack> reward;
     private final int exp;
     private Mob mob;
+    private final String name;
 
-    public Quest(NPC npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp) {
+    public Quest(String name, NPC npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp) {
         this.npc = npc;
         this.type = type;
         this.content = content;
         this.reward = reward;
         this.exp = exp;
-    }
-    public Quest(NPC npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp, Mob mob) {
-        this.npc = npc;
-        this.type = type;
-        this.content = content;
-        this.reward = reward;
-        this.exp = exp;
-        this.mob = mob;
+        this.name = name;
     }
 
     public NPC getNpc() {
