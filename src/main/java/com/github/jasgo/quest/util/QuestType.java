@@ -12,4 +12,15 @@ public enum QuestType {
     public int getId() {
         return id;
     }
+    public static QuestType getById(int id) {
+        if(id == 0) {
+            return DEFAULT;
+        } else if (id == 1) {
+            return REPEAT;
+        } else if (id == 2) {
+            return CHAIN;
+        } else {
+            return null;
+        }
+    }
 }

@@ -1,7 +1,10 @@
 package com.github.jasgo.quest.util;
 
+import com.github.jasgo.levellib.mobs.Mob;
 import com.github.jasgo.quest.Main;
+import com.github.jasgo.quest.quests.KillMobsQuest;
 import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -30,11 +33,24 @@ public class QuestLoader {
                 }
             }
         }
+        questFileToQuest();
+    }
+    public static void questFileToQuest() {
         questFile.forEach(qf -> {
             String name = qf.getName().replace("quest_", "");
             int qtid = qf.getInt("type");
             int qctid = qf.getInt("content-type");
             UUID uuid = UUID.fromString("npc");
+            NPC npc = CitizensAPI.getNPCRegistry().getByUniqueId(uuid);
+            List<ItemStack> rewardList = getRewardListofQuestFile(qf);
+            int exp = qf.getInt("exp");
+            Quest quest = new Quest(name, npc, QuestType.getById(qtid), QuestContentType.getById(qctid), rewardList, exp);
+            if(qctid == 0) {
+                if(qf.contains("mob") && qf.contains("goal")) {
+                    KillMobsQuest killMobsQuest = new KillMobsQuest(quest, Mob.valueOf(qf.getString("mob")), qf.getInt("goal"));
+                    QuestManager.npcQuest.put(npc, killMobsQuest);
+                }
+            }
         });
     }
     public static boolean isQuest(FileConfiguration config) {
@@ -49,7 +65,7 @@ public class QuestLoader {
         });
         return result.get();
     }
-    public static List<ItemStack> getRewardsofQuestFile(FileConfiguration config) {
+    public static List<ItemStack> getRewardListofQuestFile(FileConfiguration config) {
         List<Map<?, ?>> rewardList = config.getMapList("reward");
         List<ItemStack> rewards = new ArrayList<>();
         rewardList.forEach(reward -> {

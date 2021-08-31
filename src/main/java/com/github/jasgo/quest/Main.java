@@ -2,6 +2,7 @@ package com.github.jasgo.quest;
 
 import com.github.jasgo.quest.util.QuestLoader;
 import com.github.jasgo.quest.util.QuestManager;
+import io.lumine.xikage.mythicmobs.MythicMobs;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.command.Command;

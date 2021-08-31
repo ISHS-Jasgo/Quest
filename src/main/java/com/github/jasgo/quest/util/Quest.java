@@ -12,7 +12,6 @@ public class Quest {
     private final QuestContentType content;
     private final List<ItemStack> reward;
     private final int exp;
-    private Mob mob;
     private final String name;
 
     public Quest(String name, NPC npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp) {
@@ -42,5 +41,13 @@ public class Quest {
 
     public List<ItemStack> getReward() {
         return reward;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getExp() {
+        return exp;
     }
 }

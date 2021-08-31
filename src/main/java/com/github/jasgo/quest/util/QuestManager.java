@@ -15,27 +15,29 @@ public class QuestManager {
     public static HashMap<NPC, Quest> npcQuest = new HashMap<>();
 
     public static Quest getQuest(Player player) {
-        if(quests.containsKey(player)) {
+        if (quests.containsKey(player)) {
             return quests.get(player);
         } else {
             return null;
         }
     }
+
     public static List<Quest> getClearQuests(Player player) {
-        if(clear.containsKey(player)) {
+        if (clear.containsKey(player)) {
             return clear.get(player);
         } else {
             return null;
         }
     }
+
     public static boolean giveQuest(Player player, Quest quest) {
-        if(!quests.containsKey(player)) {
-            if(clear.containsKey(player)) {
-                if(!clear.get(player).contains(quest)) {
+        if (!quests.containsKey(player)) {
+            if (clear.containsKey(player)) {
+                if (!clear.get(player).contains(quest)) {
                     quests.put(player, quest);
                     return true;
                 } else {
-                    if(quest.getType() == QuestType.REPEAT) {
+                    if (quest.getType() == QuestType.REPEAT) {
                         quests.put(player, quest);
                         return true;
                     } else {
@@ -50,13 +52,15 @@ public class QuestManager {
             return false;
         }
     }
+
     public static boolean clearQuest(Player player) {
-        if(quests.containsKey(player)) {
+        if (quests.containsKey(player)) {
             if (clear.containsKey(player)) {
                 clear.get(player).add(quests.get(player));
             } else {
                 clear.put(player, new ArrayList<>(Arrays.asList(quests.get(player))));
             }
+            getQuest(player).getReward().forEach(reward -> player.getInventory().addItem(reward));
             quests.remove(player);
             return true;
         } else {
