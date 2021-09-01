@@ -1,5 +1,6 @@
 package com.github.jasgo.quest.util;
 
+import com.github.jasgo.levellib.util.LevelUtil;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.entity.Player;
 
@@ -61,6 +62,12 @@ public class QuestManager {
                 clear.put(player, new ArrayList<>(Arrays.asList(quests.get(player))));
             }
             getQuest(player).getReward().forEach(reward -> player.getInventory().addItem(reward));
+            LevelUtil.setExp(player, LevelUtil.getExp(player) + getQuest(player).getExp());
+            if(LevelUtil.getExp(player) > LevelUtil.getMaxExp(player)) {
+                LevelUtil.setExp(player, 0);
+                LevelUtil.setLevel(player, LevelUtil.getLevel(player) + 1);
+                //수정해야함!!
+            }
             quests.remove(player);
             return true;
         } else {

@@ -3,3 +3,13 @@ version: ${project.version}
 main: com.github.jasgo.quest.Main
 api-version: 1.17
 authors: [ Jasgo ]
+
+commands:
+  quest:
+    description: "/quest"
+  q:
+    description: "/quest"
+  퀘:
+    description: "/quest"
+  퀘스트:
+    description: "/quest"

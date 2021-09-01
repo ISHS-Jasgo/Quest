@@ -1,5 +1,8 @@
 package com.github.jasgo.quest;
 
+import com.github.jasgo.quest.event.CMDorChatEvent;
+import com.github.jasgo.quest.event.MobKill;
+import com.github.jasgo.quest.event.NPCClick;
 import com.github.jasgo.quest.util.QuestLoader;
 import com.github.jasgo.quest.util.QuestManager;
 import io.lumine.xikage.mythicmobs.MythicMobs;
@@ -15,6 +18,9 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        this.getServer().getPluginManager().registerEvents(new CMDorChatEvent(), this);
+        this.getServer().getPluginManager().registerEvents(new MobKill(), this);
+        this.getServer().getPluginManager().registerEvents(new NPCClick(), this);
         File dir = new File(getDataFolder() + "/quest/");
         if(!dir.exists())
             dir.mkdirs();
