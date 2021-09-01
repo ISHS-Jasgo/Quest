@@ -60,4 +60,7 @@ public class Quest {
     public Quest getChild() {
         return child;
     }
+    public void setChild(Quest child) {
+        this.child = child;
+    }
 }

@@ -5,6 +5,7 @@ import com.github.jasgo.quest.Main;
 import com.github.jasgo.quest.quests.CMDorChatQuest;
 import com.github.jasgo.quest.quests.KillMobsQuest;
 import com.github.jasgo.quest.quests.NPCInteractQuest;
+import com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.Material;
@@ -13,6 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class QuestLoader {
     public static List<FileConfiguration> questFile = new ArrayList<>();
-    public static List<Quest> questList = new ArrayList<>();
 
     public static void initQuests() {
         File dir = new File(Main.getPlugin(Main.class).getDataFolder() + "/quest/");
@@ -39,30 +40,7 @@ public class QuestLoader {
 
     public static void questFileToQuest() {
         questFile.forEach(qf -> {
-            String name = qf.getName().replace("quest_", "");
-            int qtid = qf.getInt("type");
-            int qctid = qf.getInt("content-type");
-            UUID uuid = UUID.fromString("npc");
-            NPC npc = CitizensAPI.getNPCRegistry().getByUniqueId(uuid);
-            List<ItemStack> rewardList = getRewardListofQuestFile(qf);
-            int exp = qf.getInt("exp");
-            Quest quest = new Quest(name, npc, QuestType.getById(qtid), QuestContentType.getById(qctid), rewardList, exp);
-            if (qctid == 0) {
-                if (qf.contains("mob") && qf.contains("goal")) {
-                    KillMobsQuest killMobsQuest = new KillMobsQuest(quest, Mob.valueOf(qf.getString("mob")), qf.getInt("goal"));
-                    QuestManager.npcQuest.put(npc, killMobsQuest);
-                }
-            } else if (qctid == 1) {
-                if (qf.contains("text") && qf.contains("isCMD")) {
-                    CMDorChatQuest cmDorChatQuest = new CMDorChatQuest(quest, qf.getString("text"), qf.getBoolean("isCMD"));
-                    QuestManager.npcQuest.put(npc, cmDorChatQuest);
-                }
-            } else if (qctid == 2) {
-                if (qf.contains("target")) {
-                    NPCInteractQuest npcInteractQuest = new NPCInteractQuest(quest, CitizensAPI.getNPCRegistry().getByUniqueId(UUID.fromString(qf.getString("target"))));
-                    QuestManager.npcQuest.put(npc, npcInteractQuest);
-                }
-            }
+            toQuest(qf);
         });
     }
 
@@ -90,10 +68,9 @@ public class QuestLoader {
             String name = (String) reward.get("name");
             String material = ((String) reward.get("material")).replace(" ", "_").toUpperCase();
             List<String> lore = (List<String>) reward.get("lore");
-            byte data = (byte) reward.get("data");
-            short damage = (short) reward.get("damage");
+            short damage = (short) reward.get("data");
             int amount = (int) reward.get("amount");
-            ItemStack item = new ItemStack(Material.valueOf(material), amount, damage, data);
+            ItemStack item = new ItemStack(Material.valueOf(material), amount, damage);
             ItemMeta meta = item.getItemMeta();
             meta.setDisplayName(name);
             meta.setLore(lore);
@@ -101,5 +78,36 @@ public class QuestLoader {
             rewards.add(item);
         });
         return rewards;
+    }
+    public static Quest toQuest(FileConfiguration config) {
+        String name = config.getName().replace("quest_", "");
+        int type = config.getInt("type");
+        int content = config.getInt("content-type");
+        UUID uuid = UUID.fromString("npc");
+        NPC npc = CitizensAPI.getNPCRegistry().getByUniqueId(uuid);
+        List<ItemStack> rewardList = getRewardListofQuestFile(config);
+        int exp = config.getInt("exp");
+        Quest quest = new Quest(name, npc, QuestType.getById(type), QuestContentType.getById(content), rewardList, exp, null);
+        if (content == 0) {
+            if (config.contains("mob") && config.contains("goal")) {
+                quest = new KillMobsQuest(quest, Mob.valueOf(config.getString("mob")), config.getInt("goal"));
+            }
+        } else if (content == 1) {
+            if (config.contains("text") && config.contains("isCMD")) {
+                quest = new CMDorChatQuest(quest, config.getString("text"), config.getBoolean("isCMD"));
+            }
+        } else if (content == 2) {
+            if (config.contains("target")) {
+                quest = new NPCInteractQuest(quest, CitizensAPI.getNPCRegistry().getByUniqueId(UUID.fromString(config.getString("target"))));
+            }
+        }
+        if(config.contains("child")) {
+            File f = new File(Main.getPlugin(Main.class).getDataFolder() + "/quest/" + config.getString("child"));
+            if(f.exists()) {
+                quest.setChild(toQuest(YamlConfiguration.loadConfiguration(f)));
+            }
+        }
+        QuestManager.npcQuest.put(npc, quest);
+        return quest;
     }
 }
