@@ -3,6 +3,7 @@ package com.github.jasgo.quest.util;
 import com.github.jasgo.levellib.util.LevelUtil;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ public class QuestManager {
     public static List<NPC> questNPC = new ArrayList<>();
     public static HashMap<NPC, Quest> npcQuest = new HashMap<>();
 
+    @Nullable
     public static Quest getQuest(Player player) {
         if (quests.containsKey(player)) {
             return quests.get(player);
@@ -23,6 +25,7 @@ public class QuestManager {
         }
     }
 
+    @Nullable
     public static List<Quest> getClearQuests(Player player) {
         if (clear.containsKey(player)) {
             return clear.get(player);
@@ -62,6 +65,9 @@ public class QuestManager {
                 clear.put(player, new ArrayList<>(Arrays.asList(quests.get(player))));
             }
             getQuest(player).getReward().forEach(reward -> player.getInventory().addItem(reward));
+            if(getQuest(player).getChild() != null) {
+                giveQuest(player, getQuest(player).getChild());
+            }
             LevelUtil.setExp(player, LevelUtil.getExp(player) + getQuest(player).getExp());
             if(LevelUtil.getExp(player) > LevelUtil.getMaxExp(player)) {
                 LevelUtil.setExp(player, 0);

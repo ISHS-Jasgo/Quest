@@ -4,6 +4,7 @@ import com.github.jasgo.levellib.mobs.Mob;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class Quest {
@@ -13,14 +14,19 @@ public class Quest {
     private final List<ItemStack> reward;
     private final int exp;
     private final String name;
+    private Quest child;
 
-    public Quest(String name, NPC npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp) {
+    public Quest(String name, NPC npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp, @Nullable Quest child) {
         this.npc = npc;
         this.type = type;
         this.content = content;
         this.reward = reward;
         this.exp = exp;
         this.name = name;
+        if (child == null)
+            this.child = null;
+        else
+            this.child = child;
     }
 
     public NPC getNpc() {
@@ -49,5 +55,9 @@ public class Quest {
 
     public int getExp() {
         return exp;
+    }
+
+    public Quest getChild() {
+        return child;
     }
 }

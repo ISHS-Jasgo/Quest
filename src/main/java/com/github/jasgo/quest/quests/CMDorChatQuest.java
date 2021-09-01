@@ -8,7 +8,7 @@ public class CMDorChatQuest extends Quest {
     private final boolean isCmd;
 
     public CMDorChatQuest(Quest quest, String text, boolean isCmd) {
-        super(quest.getName(), quest.getNpc(), quest.getType(), quest.getContent(), quest.getReward(), quest.getExp());
+        super(quest.getName(), quest.getNpc(), quest.getType(), quest.getContent(), quest.getReward(), quest.getExp(), quest.getChild());
         this.text = text;
         this.isCmd = isCmd;
     }

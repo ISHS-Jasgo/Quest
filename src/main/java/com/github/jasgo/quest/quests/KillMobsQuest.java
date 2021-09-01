@@ -15,7 +15,7 @@ public class KillMobsQuest extends Quest {
     private int count;
 
     public KillMobsQuest(Quest quest, Mob target, int goal) {
-        super(quest.getName(), quest.getNpc(), quest.getType(), quest.getContent(), quest.getReward(), quest.getExp());
+        super(quest.getName(), quest.getNpc(), quest.getType(), quest.getContent(), quest.getReward(), quest.getExp(), quest.getChild());
         this.target = target;
         this.goal = goal;
         this.count = 0;
