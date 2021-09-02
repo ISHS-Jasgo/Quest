@@ -5,7 +5,6 @@ import com.github.jasgo.quest.Main;
 import com.github.jasgo.quest.quests.CMDorChatQuest;
 import com.github.jasgo.quest.quests.KillMobsQuest;
 import com.github.jasgo.quest.quests.NPCInteractQuest;
-import com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.Material;
@@ -14,7 +13,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

@@ -10,7 +10,7 @@ import org.bukkit.event.Listener;
 public class NPCClick implements Listener {
     @EventHandler
     public void onClick(NPCRightClickEvent event) {
-        if(QuestManager.questNPC.contains(event.getNPC())) {
+        if(QuestManager.npcQuest.containsKey(event.getNPC())) {
             boolean getQuest = QuestManager.giveQuest(event.getClicker(), QuestManager.npcQuest.get(event.getNPC()));
             if(getQuest) {
                 event.getClicker().sendMessage(QuestManager.getQuest(event.getClicker()).getName() + "퀘스트를 받았습니다!");

@@ -3,8 +3,8 @@ package com.github.jasgo.quest.util;
 import com.github.jasgo.levellib.util.LevelUtil;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +13,6 @@ import java.util.List;
 public class QuestManager {
     private static HashMap<Player, Quest> quests = new HashMap<>();
     private static HashMap<Player, List<Quest>> clear = new HashMap<>();
-    public static List<NPC> questNPC = new ArrayList<>();
     public static HashMap<NPC, Quest> npcQuest = new HashMap<>();
 
     @Nullable

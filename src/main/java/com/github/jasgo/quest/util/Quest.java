@@ -1,6 +1,5 @@
 package com.github.jasgo.quest.util;
 
-import com.github.jasgo.levellib.mobs.Mob;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.inventory.ItemStack;
 
