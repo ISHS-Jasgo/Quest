@@ -7,6 +7,7 @@ import com.github.jasgo.quest.quests.KillMobsQuest;
 import com.github.jasgo.quest.quests.NPCInteractQuest;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -58,9 +59,11 @@ public class QuestLoader {
         List<Map<?, ?>> rewardList = config.getMapList("reward");
         List<ItemStack> rewards = new ArrayList<>();
         rewardList.forEach(reward -> {
-            String name = (String) reward.get("name");
+            String name = ChatColor.translateAlternateColorCodes('&', (String) reward.get("name"));
             String material = ((String) reward.get("material")).replace(" ", "_").toUpperCase();
-            List<String> lore = (List<String>) reward.get("lore");
+            List<String> array = (List<String>) reward.get("lore");
+            List<String> lore = new ArrayList<>();
+            array.forEach(a -> lore.add(ChatColor.translateAlternateColorCodes('&', a)));
             int dmg = (int) reward.get("data");
             short damage = (short) dmg;
             int amount = (int) reward.get("amount");
