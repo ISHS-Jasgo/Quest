@@ -10,9 +10,13 @@ import net.citizensnpcs.api.CitizensAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 public final class Main extends JavaPlugin {
 
@@ -26,7 +30,7 @@ public final class Main extends JavaPlugin {
             dir.mkdirs();
         QuestLoader.initQuests();
         if (QuestLoader.questFile.size() > 0) {
-            QuestLoader.questFile.forEach(file -> Bukkit.getLogger().info("Quest Enabled : " + file.getName()));
+            QuestLoader.questFile.forEach(file -> Bukkit.getLogger().info("Quest Enabled : " + file.getString("name")));
         }
     }
 
@@ -41,32 +45,53 @@ public final class Main extends JavaPlugin {
             if (sender.isOp()) {
                 if (args.length >= 1) {
                     if (args[0].equalsIgnoreCase("setnpc") || args[0].equalsIgnoreCase("엔피시설정")) {
-                        if(args.length == 2) {
+                        if (args.length == 2) {
                             if (CitizensAPI.getDefaultNPCSelector().getSelected(sender) != null) {
-                                QuestLoader.questFile.forEach(file -> {
-                                    if(file.getName().contains(args[2])) {
-                                        file.set("npc", CitizensAPI.getDefaultNPCSelector().getSelected(sender).getUniqueId().toString());
+                                File f = new File(getDataFolder() + "/quest/" + args[1] + ".yml");
+                                if (f.exists()) {
+                                    FileConfiguration file = YamlConfiguration.loadConfiguration(f);
+                                    file.set("npc", CitizensAPI.getDefaultNPCSelector().getSelected(sender).getUniqueId().toString());
+                                    try {
+                                        file.save(f);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
                                     }
-                                });
+                                }
                             } else {
                                 sender.sendMessage("NPC를 지정해주세요!");
                             }
                         }
                     } else if (args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("리로드")) {
+                        QuestLoader.questFile.clear();
+                        QuestManager.npcQuest.clear();
                         QuestLoader.initQuests();
                         if (QuestLoader.questFile.size() > 0) {
-                            QuestLoader.questFile.forEach(file -> Bukkit.getLogger().info("Quest Enabled : " + file.getName()));
-                        }
-                    } else if(args[0].equalsIgnoreCase("settarget") || args[0].equalsIgnoreCase("타깃설정")) {
-                        if(args.length == 2) {
-                            if (CitizensAPI.getDefaultNPCSelector().getSelected(sender) != null) {
-                                QuestLoader.questFile.forEach(file -> {
-                                    if(file.getName().contains(args[2])) {
-                                        if(QuestLoader.toQuest(file) instanceof NPCInteractQuest) {
-                                            file.set("target", CitizensAPI.getDefaultNPCSelector().getSelected(sender).getUniqueId().toString());
+                            QuestLoader.questFile.forEach(file -> {
+                                Bukkit.getLogger().info("Quest Enabled : " + file.getString("name"));
+                                sender.sendMessage("Quest Enabled : " + file.getString("name"));
+                                Bukkit.getOnlinePlayers().forEach(player -> {
+                                    if (QuestManager.getQuest(player) != null) {
+                                        if (QuestManager.getQuest(player).getName().equalsIgnoreCase(file.getString("name"))) {
+                                            QuestManager.removeQuest(player);
+                                            QuestManager.giveQuest(player, QuestManager.npcQuest.get(UUID.fromString(file.getString("npc"))));
                                         }
                                     }
                                 });
+                            });
+                        }
+                    } else if (args[0].equalsIgnoreCase("settarget") || args[0].equalsIgnoreCase("타깃설정")) {
+                        if (args.length == 2) {
+                            if (CitizensAPI.getDefaultNPCSelector().getSelected(sender) != null) {
+                                File f = new File(getDataFolder() + "/quest/" + args[1] + ".yml");
+                                if (f.exists()) {
+                                    FileConfiguration file = YamlConfiguration.loadConfiguration(f);
+                                    file.set("target", CitizensAPI.getDefaultNPCSelector().getSelected(sender).getUniqueId().toString());
+                                    try {
+                                        file.save(f);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                             } else {
                                 sender.sendMessage("NPC를 지정해주세요!");
                             }

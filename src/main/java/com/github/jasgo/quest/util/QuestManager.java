@@ -5,15 +5,12 @@ import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class QuestManager {
-    private static HashMap<Player, Quest> quests = new HashMap<>();
+    public static HashMap<Player, Quest> quests = new HashMap<>();
     private static HashMap<Player, List<Quest>> clear = new HashMap<>();
-    public static HashMap<NPC, Quest> npcQuest = new HashMap<>();
+    public static HashMap<UUID, Quest> npcQuest = new HashMap<>();
 
     @Nullable
     public static Quest getQuest(Player player) {
@@ -24,12 +21,11 @@ public class QuestManager {
         }
     }
 
-    @Nullable
     public static List<Quest> getClearQuests(Player player) {
         if (clear.containsKey(player)) {
             return clear.get(player);
         } else {
-            return null;
+            return new ArrayList<>();
         }
     }
 
@@ -58,14 +54,17 @@ public class QuestManager {
 
     public static boolean clearQuest(Player player) {
         if (quests.containsKey(player)) {
+            Quest child = getQuest(player).getChild() != null ? getQuest(player).getChild() : null;
             if (clear.containsKey(player)) {
                 clear.get(player).add(quests.get(player));
             } else {
                 clear.put(player, new ArrayList<>(Arrays.asList(quests.get(player))));
             }
             getQuest(player).getReward().forEach(reward -> player.getInventory().addItem(reward));
-            if(getQuest(player).getChild() != null) {
-                giveQuest(player, getQuest(player).getChild());
+            quests.remove(player);
+            if(child != null) {
+                giveQuest(player, child);
+                player.sendMessage(child.getName() + "퀘스트를 받았습니다!");
             }
             LevelUtil.setExp(player, LevelUtil.getExp(player) + getQuest(player).getExp());
             if(LevelUtil.getExp(player) > LevelUtil.getMaxExp(player)) {
@@ -73,10 +72,14 @@ public class QuestManager {
                 LevelUtil.setLevel(player, LevelUtil.getLevel(player) + 1);
                 //수정해야함!!
             }
-            quests.remove(player);
             return true;
         } else {
             return false;
+        }
+    }
+    public static void removeQuest(Player player) {
+        if(quests.containsKey(player)) {
+            quests.remove(player);
         }
     }
 }

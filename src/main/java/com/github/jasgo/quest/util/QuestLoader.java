@@ -44,18 +44,13 @@ public class QuestLoader {
 
     public static boolean isQuest(FileConfiguration config) {
         AtomicBoolean result = new AtomicBoolean(false);
-        CitizensAPI.getNPCRegistries().forEach(npcs -> {
-            if (npcs.getByUniqueId(UUID.fromString(config.getString("npc"))) != null) {
-                int type = config.getInt("type");
-                if (type >= 0 && type <= 2) {
-                    int content = config.getInt("content-type");
-                    if (content >= 0 && content <= 3) {
-                        result.set(true);
-                    }
-
-                }
+        int type = config.getInt("type");
+        if (type >= 0 && type <= 2) {
+            int content = config.getInt("content-type");
+            if (content >= 0 && content <= 3) {
+                result.set(true);
             }
-        });
+        }
         return result.get();
     }
 
@@ -66,7 +61,8 @@ public class QuestLoader {
             String name = (String) reward.get("name");
             String material = ((String) reward.get("material")).replace(" ", "_").toUpperCase();
             List<String> lore = (List<String>) reward.get("lore");
-            short damage = (short) reward.get("data");
+            int dmg = (int) reward.get("data");
+            short damage = (short) dmg;
             int amount = (int) reward.get("amount");
             ItemStack item = new ItemStack(Material.valueOf(material), amount, damage);
             ItemMeta meta = item.getItemMeta();
@@ -77,15 +73,15 @@ public class QuestLoader {
         });
         return rewards;
     }
+
     public static Quest toQuest(FileConfiguration config) {
-        String name = config.getName().replace("quest_", "");
+        String name = config.getString("name");
         int type = config.getInt("type");
         int content = config.getInt("content-type");
-        UUID uuid = UUID.fromString("npc");
-        NPC npc = CitizensAPI.getNPCRegistry().getByUniqueId(uuid);
+        UUID uuid = UUID.fromString(config.getString("npc"));
         List<ItemStack> rewardList = getRewardListofQuestFile(config);
         int exp = config.getInt("exp");
-        Quest quest = new Quest(name, npc, QuestType.getById(type), QuestContentType.getById(content), rewardList, exp, null);
+        Quest quest = new Quest(name, uuid, QuestType.getById(type), QuestContentType.getById(content), rewardList, exp, null);
         if (content == 0) {
             if (config.contains("mob") && config.contains("goal")) {
                 quest = new KillMobsQuest(quest, Mob.valueOf(config.getString("mob")), config.getInt("goal"));
@@ -96,16 +92,16 @@ public class QuestLoader {
             }
         } else if (content == 2) {
             if (config.contains("target")) {
-                quest = new NPCInteractQuest(quest, CitizensAPI.getNPCRegistry().getByUniqueId(UUID.fromString(config.getString("target"))));
+                quest = new NPCInteractQuest(quest, UUID.fromString(config.getString("target")));
             }
         }
-        if(config.contains("child")) {
+        if (config.contains("child")) {
             File f = new File(Main.getPlugin(Main.class).getDataFolder() + "/quest/" + config.getString("child"));
-            if(f.exists()) {
+            if (f.exists()) {
                 quest.setChild(toQuest(YamlConfiguration.loadConfiguration(f)));
             }
         }
-        QuestManager.npcQuest.put(npc, quest);
+        QuestManager.npcQuest.put(uuid, quest);
         return quest;
     }
 }
