@@ -1,11 +1,16 @@
 package com.github.jasgo.quest.util;
 
 import com.github.jasgo.levellib.util.LevelUtil;
-import net.citizensnpcs.api.npc.NPC;
+import com.github.jasgo.quest.Main;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class QuestManager {
     public static HashMap<Player, Quest> quests = new HashMap<>();
@@ -34,10 +39,12 @@ public class QuestManager {
             if (clear.containsKey(player)) {
                 if (!clear.get(player).contains(quest)) {
                     quests.put(player, quest);
+                    saveQuests(player);
                     return true;
                 } else {
                     if (quest.getType() == QuestType.REPEAT) {
                         quests.put(player, quest);
+                        saveQuests(player);
                         return true;
                     } else {
                         return false;
@@ -45,6 +52,7 @@ public class QuestManager {
                 }
             } else {
                 quests.put(player, quest);
+                saveQuests(player);
                 return true;
             }
         } else {
@@ -72,6 +80,7 @@ public class QuestManager {
                 LevelUtil.setLevel(player, LevelUtil.getLevel(player) + 1);
                 //수정해야함!!
             }
+            saveQuests(player);
             return true;
         } else {
             return false;
@@ -80,6 +89,39 @@ public class QuestManager {
     public static void removeQuest(Player player) {
         if(quests.containsKey(player)) {
             quests.remove(player);
+        }
+    }
+    public static Quest getQuestByName(String name) {
+        AtomicReference<Quest> atomicQuest = new AtomicReference<>();
+        npcQuest.forEach((uuid, quest) -> {
+            if(quest.getName().equalsIgnoreCase(name)) {
+                atomicQuest.set(quest);
+            }
+        });
+        return atomicQuest.get();
+    }
+    public static void saveQuests(Player player) {
+        File f = new File(Main.getPlugin(Main.class).getDataFolder() + "/user/" + player.getUniqueId().toString() + ".yml");
+        FileConfiguration config = YamlConfiguration.loadConfiguration(f);
+        List<String> cq = new ArrayList<>();
+        getClearQuests(player).forEach(quest -> cq.add(quest.getName()));
+        config.set("clear", cq);
+        if(getQuest(player) != null) {
+            config.set("quest", getQuest(player).getName());
+        }
+        try {
+            config.save(f);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void initQuests(Player player) {
+        File f = new File(Main.getPlugin(Main.class).getDataFolder() + "/user/" + player.getUniqueId().toString() + ".yml");
+        FileConfiguration config = YamlConfiguration.loadConfiguration(f);
+        if(f.exists()) {
+            clear.put(player, new ArrayList<>());
+            config.getStringList("clear").forEach(c -> clear.get(player).add(getQuestByName(c)));
+            quests.put(player, getQuestByName(config.getString("quest")));
         }
     }
 }
