@@ -10,7 +10,7 @@ public class NPCInteractQuest extends Quest {
     private final UUID target;
 
     public NPCInteractQuest(Quest quest, UUID target) {
-        super(quest.getName(), quest.getNpc(), quest.getType(), quest.getContent(), quest.getReward(), quest.getExp(), quest.getChild());
+        super(quest.getName(), quest.getNpc(), quest.getType(), quest.getContent(), quest.getReward(), quest.getExp(), quest.getStart(), quest.getEnd(), quest.getChild());
         this.target = target;
     }
 

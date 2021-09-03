@@ -19,7 +19,7 @@ public class CMDorChatEvent implements Listener {
                 if (quest.isCmd()) {
                     String cmd = event.getMessage();
                     if (quest.getText().equalsIgnoreCase(cmd)) {
-                        event.getPlayer().sendMessage(quest.getName() + "퀘스트를 클리어했습니다!");
+                        event.getPlayer().sendMessage(quest.getName() + " 퀘스트를 클리어했습니다!");
                         QuestManager.clearQuest(event.getPlayer());
                     }
                 }
@@ -32,12 +32,13 @@ public class CMDorChatEvent implements Listener {
         if(QuestManager.getQuest(event.getPlayer()) == null)
             return;
         if (QuestManager.getQuest(event.getPlayer()).getContent() == QuestContentType.CMDorChat) {
+            event.setCancelled(true);
             if (QuestManager.getQuest(event.getPlayer()) instanceof CMDorChatQuest) {
                 CMDorChatQuest quest = (CMDorChatQuest) QuestManager.getQuest(event.getPlayer());
                 if (!quest.isCmd()) {
                     String text = event.getMessage();
                     if (quest.getText().equalsIgnoreCase(text)) {
-                        event.getPlayer().sendMessage(quest.getName() + "퀘스트를 클리어했습니다!");
+                        event.getPlayer().sendMessage(quest.getName() + " 퀘스트를 클리어했습니다!");
                         QuestManager.clearQuest(event.getPlayer());
                     }
                 }

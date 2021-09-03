@@ -2,6 +2,7 @@ package com.github.jasgo.quest.util;
 
 import com.github.jasgo.levellib.mobs.Mob;
 import com.github.jasgo.quest.Main;
+import com.github.jasgo.quest.conversation.Conversation;
 import com.github.jasgo.quest.quests.CMDorChatQuest;
 import com.github.jasgo.quest.quests.KillMobsQuest;
 import com.github.jasgo.quest.quests.NPCInteractQuest;
@@ -15,10 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class QuestLoader {
@@ -60,7 +58,8 @@ public class QuestLoader {
         List<ItemStack> rewards = new ArrayList<>();
         rewardList.forEach(reward -> {
             String name = ChatColor.translateAlternateColorCodes('&', (String) reward.get("name"));
-            String material = ((String) reward.get("material")).replace(" ", "_").toUpperCase();
+            String m = ((String) reward.get("material")).replace(" ", "_").toUpperCase();
+            String material = Material.valueOf(m) == null ? "air" : m;
             List<String> array = (List<String>) reward.get("lore");
             List<String> lore = new ArrayList<>();
             array.forEach(a -> lore.add(ChatColor.translateAlternateColorCodes('&', a)));
@@ -76,6 +75,54 @@ public class QuestLoader {
         });
         return rewards;
     }
+    public static ItemStack getStartConversationItem(FileConfiguration config) {
+        if(config.contains("conversation.start.offhand")) {
+            String path = "conversation.start.offhand.";
+            String m = config.getString(path + "material").replace(" ", "_").toUpperCase();
+            String material = Material.valueOf(m) == null ? "air" : m;
+            int dmg = config.getInt(path + "data");
+            short damage = (short) dmg;
+            return new ItemStack(Material.valueOf(material), 1, damage);
+        } else {
+            return new ItemStack(Material.AIR);
+        }
+    }
+    public static ItemStack getEndConversationItem(FileConfiguration config) {
+        if(config.contains("conversation.end.offhand")) {
+            String path = "conversation.end.offhand.";
+            String m = config.getString(path + "material").replace(" ", "_").toUpperCase();
+            String material = Material.valueOf(m) == null ? "air" : m;
+            int dmg = config.getInt(path + "data");
+            short damage = (short) dmg;
+            return new ItemStack(Material.valueOf(material), 1, damage);
+        } else {
+            return new ItemStack(Material.AIR);
+        }
+    }
+    public static Conversation getStartConversation(FileConfiguration config) {
+        if(config.contains("conversation.start.lines") && config.contains("conversation.start.delay")) {
+            List<String> l = config.getStringList("conversation.start.lines");
+            List<String> lines = new ArrayList<>();
+            l.forEach(line -> lines.add(ChatColor.translateAlternateColorCodes('&', line)));
+            long delay = config.getLong("conversation.start.delay");
+            ItemStack offhand = getStartConversationItem(config);
+            Conversation conversation = new Conversation(lines, delay, offhand);
+            return conversation;
+        }
+        return new Conversation(Arrays.asList(""), 0L, new ItemStack(Material.AIR));
+    }
+    public static Conversation getEndConversation(FileConfiguration config) {
+        if(config.contains("conversation.end.lines") && config.contains("conversation.end.delay")) {
+            List<String> l = config.getStringList("conversation.end.lines");
+            List<String> lines = new ArrayList<>();
+            l.forEach(line -> lines.add(ChatColor.translateAlternateColorCodes('&', line)));
+            long delay = config.getLong("conversation.end.delay");
+            ItemStack offhand = getStartConversationItem(config);
+            Conversation conversation = new Conversation(lines, delay, offhand);
+            return conversation;
+        }
+        return new Conversation(Arrays.asList(""), 0L, new ItemStack(Material.AIR));
+    }
 
     public static Quest toQuest(FileConfiguration config) {
         String name = config.getString("name");
@@ -84,7 +131,9 @@ public class QuestLoader {
         UUID uuid = UUID.fromString(config.getString("npc"));
         List<ItemStack> rewardList = getRewardListofQuestFile(config);
         int exp = config.getInt("exp");
-        Quest quest = new Quest(name, uuid, QuestType.getById(type), QuestContentType.getById(content), rewardList, exp, null);
+        Conversation startConversation = getStartConversation(config);
+        Conversation endConversation = getEndConversation(config);
+        Quest quest = new Quest(name, uuid, QuestType.getById(type), QuestContentType.getById(content), rewardList, exp, startConversation, endConversation, null);
         if (content == 0) {
             if (config.contains("mob") && config.contains("goal")) {
                 quest = new KillMobsQuest(quest, Mob.valueOf(config.getString("mob")), config.getInt("goal"));

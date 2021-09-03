@@ -1,5 +1,6 @@
 package com.github.jasgo.quest.util;
 
+import com.github.jasgo.quest.conversation.Conversation;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.inventory.ItemStack;
 
@@ -15,14 +16,18 @@ public class Quest {
     private final int exp;
     private final String name;
     private Quest child;
+    private final Conversation start;
+    private final Conversation end;
 
-    public Quest(String name, UUID npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp, @Nullable Quest child) {
+    public Quest(String name, UUID npc, QuestType type, QuestContentType content, List<ItemStack> reward, int exp, Conversation start, Conversation end, @Nullable Quest child) {
         this.npc = npc;
         this.type = type;
         this.content = content;
         this.reward = reward;
         this.exp = exp;
         this.name = name;
+        this.start = start;
+        this.end = end;
         if (child == null)
             this.child = null;
         else
@@ -62,5 +67,13 @@ public class Quest {
     }
     public void setChild(Quest child) {
         this.child = child;
+    }
+
+    public Conversation getStart() {
+        return start;
+    }
+
+    public Conversation getEnd() {
+        return end;
     }
 }

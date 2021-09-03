@@ -1,9 +1,6 @@
 package com.github.jasgo.quest;
 
-import com.github.jasgo.quest.event.CMDorChatEvent;
-import com.github.jasgo.quest.event.MobKill;
-import com.github.jasgo.quest.event.NPCClick;
-import com.github.jasgo.quest.event.PlayerJoin;
+import com.github.jasgo.quest.event.*;
 import com.github.jasgo.quest.quests.NPCInteractQuest;
 import com.github.jasgo.quest.util.QuestLoader;
 import com.github.jasgo.quest.util.QuestManager;
@@ -23,6 +20,7 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        this.getServer().getPluginManager().registerEvents(new OffHandEvent(), this);
         this.getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         this.getServer().getPluginManager().registerEvents(new CMDorChatEvent(), this);
         this.getServer().getPluginManager().registerEvents(new MobKill(), this);

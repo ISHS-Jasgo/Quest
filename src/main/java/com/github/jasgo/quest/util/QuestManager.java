@@ -2,9 +2,13 @@ package com.github.jasgo.quest.util;
 
 import com.github.jasgo.levellib.util.LevelUtil;
 import com.github.jasgo.quest.Main;
+import com.github.jasgo.quest.conversation.Conversation;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -62,24 +66,26 @@ public class QuestManager {
 
     public static boolean clearQuest(Player player) {
         if (quests.containsKey(player)) {
-            Quest child = getQuest(player).getChild() != null ? getQuest(player).getChild() : null;
+            Quest child = getQuest(player).getChild();
             if (clear.containsKey(player)) {
                 clear.get(player).add(quests.get(player));
             } else {
                 clear.put(player, new ArrayList<>(Arrays.asList(quests.get(player))));
             }
             getQuest(player).getReward().forEach(reward -> player.getInventory().addItem(reward));
-            LevelUtil.setExp(player, LevelUtil.getExp(player) + getQuest(player).getExp());
-            quests.remove(player);
+            Conversation end = getQuest(player).getEnd();
+            end.start(player);
             if(child != null) {
                 giveQuest(player, child);
-                player.sendMessage(child.getName() + "퀘스트를 받았습니다!");
+                (new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+                        player.sendMessage(child.getName() + "퀘스트를 받았습니다!");
+                    }
+                }).runTaskLaterAsynchronously(Main.getPlugin(Main.class), getQuest(player).getEnd().getDelay() * (getQuest(player).getEnd().getLines().size() + 1));
             }
-            if(LevelUtil.getExp(player) > LevelUtil.getMaxExp(player)) {
-                LevelUtil.setExp(player, 0);
-                LevelUtil.setLevel(player, LevelUtil.getLevel(player) + 1);
-                //수정해야함!!
-            }
+            quests.remove(player);
             saveQuests(player);
             return true;
         } else {
