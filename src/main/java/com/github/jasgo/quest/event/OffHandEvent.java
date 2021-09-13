@@ -1,5 +1,6 @@
 package com.github.jasgo.quest.event;
 
+import io.lumine.xikage.mythicmobs.MythicMobs;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;

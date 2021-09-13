@@ -1,8 +1,8 @@
 package com.github.jasgo.quest.util;
 
-import com.github.jasgo.levellib.util.LevelUtil;
 import com.github.jasgo.quest.Main;
 import com.github.jasgo.quest.conversation.Conversation;
+import com.github.jasgo.quest.quests.KillMobsQuest;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -44,11 +44,15 @@ public class QuestManager {
                 if (!clear.get(player).contains(quest)) {
                     quests.put(player, quest);
                     saveQuests(player);
+                    Conversation conversation = getQuest(player).getStart();
+                    conversation.start(player);
                     return true;
                 } else {
                     if (quest.getType() == QuestType.REPEAT) {
                         quests.put(player, quest);
                         saveQuests(player);
+                        Conversation conversation = getQuest(player).getStart();
+                        conversation.start(player);
                         return true;
                     } else {
                         return false;
@@ -57,6 +61,8 @@ public class QuestManager {
             } else {
                 quests.put(player, quest);
                 saveQuests(player);
+                Conversation conversation = getQuest(player).getStart();
+                conversation.start(player);
                 return true;
             }
         } else {
@@ -75,17 +81,18 @@ public class QuestManager {
             getQuest(player).getReward().forEach(reward -> player.getInventory().addItem(reward));
             Conversation end = getQuest(player).getEnd();
             end.start(player);
+            long delay = getQuest(player).getEnd().getDelay();
+            int lines = getQuest(player).getEnd().getLines().size() + 1;
+            quests.remove(player);
             if(child != null) {
                 giveQuest(player, child);
                 (new BukkitRunnable() {
                     @Override
                     public void run() {
-                        player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
                         player.sendMessage(child.getName() + "퀘스트를 받았습니다!");
                     }
-                }).runTaskLaterAsynchronously(Main.getPlugin(Main.class), getQuest(player).getEnd().getDelay() * (getQuest(player).getEnd().getLines().size() + 1));
+                }).runTaskLaterAsynchronously(Main.getPlugin(Main.class), delay * lines);
             }
-            quests.remove(player);
             saveQuests(player);
             return true;
         } else {
@@ -114,6 +121,10 @@ public class QuestManager {
         config.set("clear", cq);
         if(getQuest(player) != null) {
             config.set("quest", getQuest(player).getName());
+            if(getQuest(player) instanceof KillMobsQuest) {
+                KillMobsQuest quest = (KillMobsQuest) getQuest(player);
+                config.set("progress", quest.getProgress(player));
+            }
         }
         try {
             config.save(f);
@@ -128,6 +139,11 @@ public class QuestManager {
             clear.put(player, new ArrayList<>());
             config.getStringList("clear").forEach(c -> clear.get(player).add(getQuestByName(c)));
             quests.put(player, getQuestByName(config.getString("quest")));
+            if(getQuestByName(config.getString("quest")) instanceof KillMobsQuest && config.contains("progress")) {
+                KillMobsQuest quest = (KillMobsQuest) getQuestByName(config.getString("quest"));
+                quest.setProgress(player, config.getInt("progress"));
+                quests.put(player, quest);
+            }
         }
     }
 }
